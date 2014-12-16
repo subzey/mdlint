@@ -1,0 +1,39 @@
+html {
+	background: #e8e4e0;
+}
+}
+body {
+	margin: 1em;
+}
+#input {
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	min-height: 20em;
+	padding: .5em;
+	font: 14pt monospace;
+}
+
+#check-submit-button {
+	display: block;
+	margin: 1em auto;
+	padding: .5em 1em;
+	font-size: 18px;
+}
+
+#output {
+	font: 14pt monospace;
+}
+
+.severity-notice {
+	background: cyan;
+}
+
+.severity-warning {
+	background: yellow;
+}
+
+.severity-error {
+	background: crimson;
+	color: white;
+}
