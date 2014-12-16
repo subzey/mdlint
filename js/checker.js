@@ -90,6 +90,19 @@ var checkGuidelines = (function(){
 			}));
 		});
 
+		// Detect quotes
+		text.replace(/"|'/g, function(s, index){
+			if (codeSectionsDetector.inRange(index)){
+				return;
+			}
+			issues.push(new GuidelineIssue({
+				code: 'quotes',
+				severity: 'error',
+				offset: index,
+				span: s.length
+			}));
+		});
+
 		callback(issues);
 	}
 

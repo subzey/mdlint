@@ -1,6 +1,6 @@
 html {
 	background: #e8e4e0;
-}
+	font: 14pt sans-serif;
 }
 body {
 	margin: 1em;
@@ -14,11 +14,20 @@ body {
 	font: 14pt monospace;
 }
 
+#input.collapsed {
+	min-height: 5em;
+}
+
 #check-submit-button {
 	display: block;
 	margin: 1em auto;
 	padding: .5em 1em;
 	font-size: 18px;
+}
+
+#stats {
+	text-align: center;
+	font-style: italic;
 }
 
 #output {
@@ -37,3 +46,4 @@ body {
 	background: crimson;
 	color: white;
 }
+
