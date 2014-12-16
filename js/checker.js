@@ -27,14 +27,27 @@ var checkGuidelines = (function(){
 	}
 	CodeSectionsDetector.detect = function detect(text){ // Static method
 		var ranges = [];
-		var codeSectionsRe = /```[^]*```|`[^]*`/g;
-		var match = null;
-		/*jshint boss:true */ // Assignment is expected, this is not a typo
-		while (match = codeSectionsRe.exec(text)){
-			var start = match.index;
-			var end = match[0].length + start;
-			ranges.push([start, end]);
-		}
+
+		// Detect code sections in backticks
+		text.replace(/```[^]*```|`[^]*`/g, function(s, index){
+			ranges.push([index, index + s.length]);
+		});
+
+		// Detect code sections by indentation
+		var isList = false;
+		var lines = text.replace(/.*(?:\r\n|\n|\r)?/g, function(s, index){
+			if (/^\s*(-|\*|\d+\.\s+)/.test(s)){
+				isList = true;
+				return;
+			} else if (/^(\u0020{4}|\t)/.test(s)){
+				if (!isList){
+					ranges.push(index, [index, index + s.length]);
+				}
+			} else {
+				isList = false;
+			}
+		});
+
 		return ranges;
 	};
 	CodeSectionsDetector.prototype.inRange = function inRange(offset){
