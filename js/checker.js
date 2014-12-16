@@ -153,8 +153,8 @@ var checkGuidelines = (function(){
 		});
 
 		// Detect double spaces
-		text.replace(/((?:\r|\n|^)\s*)|\s{2,}/g, function(s, indentation, index){
-			if (indentation){
+		text.replace(/(?:\r|\n|^)\s*|(\s{2,})/g, function(s, spaces, index){
+			if (!spaces){
 				return;
 			}
 			if (codeSectionsDetector.inRange(index)){

@@ -71,11 +71,11 @@ function displayResults(text, issues) {
 				if (!selectionElement) {
 					selectionElement = document.createElement('span');
 					selectionElement.textContent = text.charAt(i);
-
-					selectionElement.className += ' severity-' + issue.severity;
-					selectionElement.className += ' code-' + issue.code;
-					selectionElement.title += getDescription(issue.code) + '\n';
 				}
+
+				selectionElement.className += ' severity-' + issue.severity;
+				selectionElement.className += ' code-' + issue.code;
+				selectionElement.title += getDescription(issue.code) + '\n';
 			}
 		}
 		if (selectionElement) {
