@@ -70,7 +70,7 @@ var checkGuidelines = (function(){
 		text.replace(/[^\r\n]{81,}/g, function(s, index){
 			issues.push(new GuidelineIssue({
 				code: 'longline',
-				severity: 'warning',
+				severity: 'notice',
 				offset: index + 80,
 				span: s.length - 80
 			}));
@@ -111,6 +111,58 @@ var checkGuidelines = (function(){
 			issues.push(new GuidelineIssue({
 				code: 'quotes',
 				severity: 'error',
+				offset: index,
+				span: s.length
+			}));
+		});
+
+		// Detect inline hrefs
+		text.replace(/(\[.*?\])\(.*?\)/g, function(s, braces, index){
+			if (codeSectionsDetector.inRange(index)){
+				return;
+			}
+			issues.push(new GuidelineIssue({
+				code: 'inlineurl',
+				severity: 'error',
+				offset: index + braces.length,
+				span: s.length - braces.length
+			}));
+		});
+
+		// Detect image w/o alt
+		text.replace(/!\[\](?:\(.*?\)|\[.*\])/g, function(s, index){
+			if (codeSectionsDetector.inRange(index)){
+				return;
+			}
+			issues.push(new GuidelineIssue({
+				code: 'noalt',
+				severity: 'error',
+				offset: index + 1,
+				span: 2
+			}));
+		});
+
+		// Detect trailing spaces
+		text.replace(/[\u0020\t]+(?=\r|\n|$)/g, function(s, index){
+			issues.push(new GuidelineIssue({
+				code: 'trailingspace',
+				severity: 'warning',
+				offset: index,
+				span: s.length
+			}));
+		});
+
+		// Detect double spaces
+		text.replace(/((?:\r|\n|^)\s*)|\s{2,}/g, function(s, indentation, index){
+			if (indentation){
+				return;
+			}
+			if (codeSectionsDetector.inRange(index)){
+				return;
+			}
+			issues.push(new GuidelineIssue({
+				code: 'doublespace',
+				severity: 'warning',
 				offset: index,
 				span: s.length
 			}));

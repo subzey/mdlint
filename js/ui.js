@@ -15,7 +15,12 @@ function getDescription(code) {
 	return {
 		'longline': 'Строка слишком длинная',
 		'emdash': 'Используйте длинное тире',
-		'ellipsis': 'Используйте многоточие'
+		'ellipsis': 'Используйте многоточие',
+		'quotes': 'Используйте кавычки-ёлочки',
+		'inlineurl': 'Вынесите URL в сноски',
+		'noalt': 'Добавьте alt-текст',
+		'trailingspace': 'Пробельные символы в конце строки',
+		'doublespace': 'Двойные пробелы'
 	}[code] || code;
 }
 
