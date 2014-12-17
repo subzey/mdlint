@@ -239,6 +239,21 @@ var checkGuidelines = (function(){
 			}));
 		});
 
+		// Detect untranslated comments
+		text.replace(/\/\*[^]*?\*\/|\/\/.*/g, function(s, index){
+			if (!codeSectionsDetector.inRange(index)){
+				// Detect only in code sections
+				return;
+			}
+			if (/[A-Za-z]/.test(s) && !/[\u0410-\u044f\u0401\0451]/.test(s)){
+				issues.push(new GuidelineIssue({
+					code: 'untranslatedcomment',
+					offset: index,
+					span: s.length
+				}));
+			}
+		});
+
 		callback(issues);
 	}
 

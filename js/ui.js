@@ -20,7 +20,8 @@ function getDescription(code) {
 		'inlineurl': 'Вынесите URL в сноски',
 		'noalt': 'Добавьте alt-текст',
 		'trailingspace': 'Пробельные символы в конце строки',
-		'doublespace': 'Двойные пробелы'
+		'doublespace': 'Двойные пробелы',
+		'untranslatedcomment': 'Возможно, комментарий не переведён'
 	}[code] || code;
 }
 
