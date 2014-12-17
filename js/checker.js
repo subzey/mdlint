@@ -153,7 +153,7 @@ var checkGuidelines = (function(){
 		});
 
 		// Detect double spaces
-		text.replace(/(?:\r|\n|^)\s*|(\s{2,})/g, function(s, spaces, index){
+		text.replace(/(?:\r|\n|^)\s*(?:\*|-|\d+\.\s)?\s*|(\s{2,})/g, function(s, spaces, index){
 			if (!spaces){
 				return;
 			}
