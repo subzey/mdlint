@@ -53,7 +53,47 @@ var checkGuidelines = (function(){
 	CodeSectionsDetector.prototype.inRange = function inRange(offset){
 		var ranges = this.ranges || [];
 		for (var i=0; i<ranges.length; i++){
-			if (offset >= ranges[i][0] && offset <= ranges[i][1]){
+			if (offset >= ranges[i][0] && offset < ranges[i][1]){
+				return true;
+			}
+		}
+		return false;
+	};
+
+	function FootLinksDetector(text){
+		var res = FootLinksDetector.detect(text);
+		this.ranges = res.ranges;
+		this.statementRanges = res.statementRanges;
+	}
+	FootLinksDetector.detect = function detect(text){ // Static method
+		var ranges = [];
+		var statementRanges = [];
+		text.replace(/(\[.*?\]\s*:\s*\S+)(?:(\s+\").*?\")?/g, function(s, main, openQuote, index){
+			openQuote = openQuote || '';
+			ranges.push([index, index + main.length + openQuote.length]);
+			if (openQuote){
+				ranges.push([index + s.length - 1, index + s.length]);
+			}
+			statementRanges.push([index, index + s.length]);
+		});
+		return {
+			ranges: ranges,
+			statementRanges: statementRanges
+		};
+	};
+	FootLinksDetector.prototype.inRange = function inRange(offset){
+		var ranges = this.ranges || [];
+		for (var i=0; i<ranges.length; i++){
+			if (offset >= ranges[i][0] && offset < ranges[i][1]){
+				return true;
+			}
+		}
+		return false;
+	};
+	FootLinksDetector.prototype.inStatementRange = function inStatementRange(offset){
+		var ranges = this.statementRanges || [];
+		for (var i=0; i<ranges.length; i++){
+			if (offset >= ranges[i][0] && offset < ranges[i][1]){
 				return true;
 			}
 		}
@@ -65,21 +105,37 @@ var checkGuidelines = (function(){
 		var issues = [];
 
 		var codeSectionsDetector = new CodeSectionsDetector(text);
+		var footLinksDetector = new FootLinksDetector(text);
 
 		// Detect long lines
 		text.replace(/[^\r\n]{81,}/g, function(s, index){
-			issues.push(new GuidelineIssue({
-				code: 'longline',
-				severity: 'notice',
-				offset: index + 80,
-				span: s.length - 80
-			}));
+			// Avoid warnings when nothing can be done
+			var grace = true;
+			s.replace(/(^(?:\*|-)?\s+)|\s/g, function(ws, indent, wsIndex){
+				if (indent){
+					return;
+				}
+				if (!codeSectionsDetector.inRange(index + wsIndex) && !footLinksDetector.inStatementRange(index + wsIndex)){
+					grace = false;
+				}
+			});
+			if (!grace){
+				issues.push(new GuidelineIssue({
+					code: 'longline',
+					severity: 'notice',
+					offset: index + 80,
+					span: s.length - 80
+				}));
+			}
 		});
 
 		// Detect ellipsis
 		text.replace(/\.{3,}/g, function(s, index){
 			// Ignore everything inside code block
 			if (codeSectionsDetector.inRange(index)){
+				return;
+			}
+			if (footLinksDetector.inRange(index)){
 				return;
 			}
 			issues.push(new GuidelineIssue({
@@ -95,6 +151,9 @@ var checkGuidelines = (function(){
 			if (codeSectionsDetector.inRange(index)){
 				return;
 			}
+			if (footLinksDetector.inRange(index)){
+				return;
+			}
 			issues.push(new GuidelineIssue({
 				code: 'emdash',
 				severity: 'error',
@@ -106,6 +165,9 @@ var checkGuidelines = (function(){
 		// Detect quotes
 		text.replace(/"|'/g, function(s, index){
 			if (codeSectionsDetector.inRange(index)){
+				return;
+			}
+			if (footLinksDetector.inRange(index)){
 				return;
 			}
 			issues.push(new GuidelineIssue({
@@ -121,6 +183,9 @@ var checkGuidelines = (function(){
 			if (codeSectionsDetector.inRange(index)){
 				return;
 			}
+			if (footLinksDetector.inRange(index)){
+				return;
+			}
 			issues.push(new GuidelineIssue({
 				code: 'inlineurl',
 				severity: 'error',
@@ -132,6 +197,9 @@ var checkGuidelines = (function(){
 		// Detect image w/o alt
 		text.replace(/!\[\](?:\(.*?\)|\[.*\])/g, function(s, index){
 			if (codeSectionsDetector.inRange(index)){
+				return;
+			}
+			if (footLinksDetector.inRange(index)){
 				return;
 			}
 			issues.push(new GuidelineIssue({
