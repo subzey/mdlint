@@ -36,12 +36,12 @@ var checkGuidelines = (function(){
 		// Detect code sections by indentation
 		var isList = false;
 		var lines = text.replace(/.*(?:\r\n|\n|\r)?/g, function(s, index){
-			if (/^\s*(-|\*|\d+\.\s+)/.test(s)){
+			if (/^\s{0,3}(-|\*|\d+\.\s+)/.test(s)){
 				isList = true;
 				return;
 			} else if (/^(\u0020{4}|\t)/.test(s)){
 				if (!isList){
-					ranges.push(index, [index, index + s.length]);
+					ranges.push([index, index + s.length]);
 				}
 			} else {
 				isList = false;
@@ -211,7 +211,10 @@ var checkGuidelines = (function(){
 		});
 
 		// Detect trailing spaces
-		text.replace(/[\u0020\t]+(?=\r|\n|$)/g, function(s, index){
+		text.replace(/(^(?:\u0020{4}|\t))|[\u0020\t]+$/gm, function(s, indent, index){
+			if (indent){
+				return;
+			}
 			issues.push(new GuidelineIssue({
 				code: 'trailingspace',
 				severity: 'warning',
