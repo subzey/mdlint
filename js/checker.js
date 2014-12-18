@@ -29,7 +29,7 @@ var checkGuidelines = (function(){
 		var ranges = [];
 
 		// Detect code sections in backticks
-		text.replace(/```[^]*```|`[^]*`/g, function(s, index){
+		text.replace(/```[^]*?```|`[^]*?`/g, function(s, index){
 			ranges.push([index, index + s.length]);
 		});
 
