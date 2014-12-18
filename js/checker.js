@@ -240,7 +240,7 @@ var checkGuidelines = (function(){
 		});
 
 		// Detect untranslated comments
-		text.replace(/\/\*[^]*?\*\/|\/\/.*/g, function(s, index){
+		text.replace(/\/\*[^]*?\*\/|\/\/.*|#.*/g, function(s, index){
 			if (!codeSectionsDetector.inRange(index)){
 				// Detect only in code sections
 				return;
@@ -253,6 +253,51 @@ var checkGuidelines = (function(){
 				}));
 			}
 		});
+
+		// Headings
+		(function(){
+			var headings = [];
+			text.replace(/^(\s*)(#+)\s+/gm, function(s, ws, hashes, index){
+				ws = ws || '';
+				var hashIndex = index + ws.length;
+				if (codeSectionsDetector.inRange(index)){
+					return;
+				}
+				headings.push({
+					index: hashIndex,
+					level: hashes.length
+				});
+			});
+
+			if (!headings[0] || headings[0].level != 1){
+				issues.push(new GuidelineIssue({
+					code: 'noh1',
+					severity: 'error'
+				}));
+			}
+
+			var lastHeadingLevel = 0;
+			for (var i=0; i<headings.length; i++){
+				var heading = headings[i];
+				if (heading.level > lastHeadingLevel + 1){
+					issues.push(new GuidelineIssue({
+						code: 'headinglevel',
+						severity: 'error',
+						offset: heading.index + lastHeadingLevel + 1,
+						span: heading.level - lastHeadingLevel - 1
+					}));
+				}
+				lastHeadingLevel = heading.level;
+				if (i !== 0 && heading.level === 1){
+					issues.push(new GuidelineIssue({
+						code: 'doubleh1',
+						severity: 'error',
+						offset: heading.index,
+						span: heading.level
+					}));
+				}
+			}
+		})();
 
 		callback(issues);
 	}

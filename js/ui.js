@@ -1,3 +1,4 @@
+/*jshint eqnull: true*/
 document.getElementById('input').addEventListener('focus', function(e) {
 	this.classList.remove('collapsed');
 }, false);
@@ -21,7 +22,10 @@ function getDescription(code) {
 		'noalt': 'Добавьте alt-текст',
 		'trailingspace': 'Пробельные символы в конце строки',
 		'doublespace': 'Двойные пробелы',
-		'untranslatedcomment': 'Возможно, комментарий не переведён'
+		'untranslatedcomment': 'Возможно, комментарий не переведён',
+		'noh1': 'Первым должен идти заголовок первого уровня',
+		'doubleh1': 'Несколько заголовков первого уровня',
+		'headinglevel': 'Неправильный уровень заголовка'
 	}[code] || code;
 }
 
@@ -34,8 +38,15 @@ function getStats(issues){
 }
 
 function displayResults(text, issues) {
+	var introElement = document.getElementById('intro');
+	if (introElement){
+		introElement.parentNode.removeChild(introElement);
+	}
+
 	var pre = document.getElementById('output');
 	pre.innerHTML = '';
+	document.getElementById('stats').innerHTML = '';
+	document.getElementById('common-errors').innerHTML = '';
 
 	if (!text.trim()){
 		document.getElementById('stats').innerHTML = 'Вы же даже ничего не написали';
@@ -61,6 +72,16 @@ function displayResults(text, issues) {
 
 	document.getElementById('stats').innerHTML = statsStr;
 
+
+	issues.forEach(function(issue){
+		if (issue.offset != null){
+			return;
+		}
+		var p = document.createElement('p');
+		p.className = 'severity-' + issue.severity + ' code-' + issue.code;
+		p.textContent =  getDescription(issue.code);
+		document.getElementById('common-errors').appendChild(p);
+	});
 
 	var textRun = '';
 

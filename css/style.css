@@ -47,3 +47,22 @@ body {
 	color: white;
 }
 
+#common-errors p {
+	margin: .4em 0;
+	padding: .4em 1em;
+	font-style: italic;
+}
+
+#intro {
+	text-align: center;
+}
+
+#intro h1 {
+	font-size: 3em;
+	margin: .5em;
+}
+
+#intro h1 {
+	font-size: 2em;
+	margin: .5em;
+}
