@@ -240,7 +240,10 @@ var checkGuidelines = (function(){
 		});
 
 		// Detect untranslated comments
-		text.replace(/\/\*[^]*?\*\/|\/\/.*|#\s.*/g, function(s, index){
+		text.replace(/(https?:\/\/\S+)|\/\*[^]*?\*\/|\/\/.*|#\s.*/g, function(s, http, index){
+			if (http){
+				return;
+			}
 			if (!codeSectionsDetector.inRange(index)){
 				// Detect only in code sections
 				return;
