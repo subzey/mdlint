@@ -5,10 +5,11 @@ document.getElementById('input').addEventListener('focus', function(e) {
 
 document.getElementById('check-form').addEventListener('submit', function(e) {
 	e.preventDefault();
-	var text = document.getElementById('input').value;
-	checkGuidelines(text, function(issues) {
-		console.log(issues);
-		displayResults(text, issues);
+	getText(document.getElementById('input').value, function(text){
+		checkGuidelines(text, function(issues) {
+			console.log(issues);
+			displayResults(text, issues);
+		});
 	});
 }, false);
 
@@ -37,16 +38,20 @@ function getStats(issues){
 	return hash;
 }
 
+function clearOutput(){
+	document.getElementById('output').innerHTML = '';
+	document.getElementById('stats').innerHTML = '';
+	document.getElementById('common-errors').innerHTML = '';
+}
+
 function displayResults(text, issues) {
 	var introElement = document.getElementById('intro');
 	if (introElement){
 		introElement.parentNode.removeChild(introElement);
 	}
+	clearOutput();
 
 	var pre = document.getElementById('output');
-	pre.innerHTML = '';
-	document.getElementById('stats').innerHTML = '';
-	document.getElementById('common-errors').innerHTML = '';
 
 	if (!text.trim()){
 		document.getElementById('stats').innerHTML = 'Вы же даже ничего не написали';
@@ -114,4 +119,65 @@ function displayResults(text, issues) {
 		pre.appendChild(document.createTextNode(textRun));
 		textRun = '';
 	}
+}
+
+function getText(text, callback){
+	var ghUri = (/^(?:https?:\/\/)?(?:www\.)?github\.com\/(\S*)$/.exec(text.trim())||0)[1];
+	if (ghUri){
+		var pathArray = ghUri.split('/');
+		var ghUser = pathArray[0];
+		var ghRepo = pathArray[1];
+		var ghAssetPath;
+		if (pathArray[2] === 'blob' && pathArray[3] === 'master'){
+			ghAssetPath = pathArray.slice(4).join('/');
+		}
+		if (!ghUser || !ghRepo || !ghAssetPath){
+			clearOutput();
+			document.getElementById('stats').innerHTML = 'Что-то не так с вашей ссылкой на Гитхаб';
+			return;
+		}
+		var jsonpCallbackId = '_ghjsonp_' + Math.random().toString(36).slice(2);
+		var ghApiUrl = 'https://api.github.com/repos/' + ghUser + '/' + ghRepo + '/contents/' + ghAssetPath + '?callback=' + jsonpCallbackId;
+
+		var cleanUp = function(){
+			delete window[jsonpCallbackId];
+			if (scriptElement.parentNode){
+				scriptElement.parentNode.removeChild(scriptElement);
+			}
+		};
+
+		var onerror = function(){
+			cleanUp();
+			clearOutput();
+			document.getElementById('stats').innerHTML = 'Не получилось получить содержимое с Гитхаба';
+		};
+
+		var jsonpCallback = function(response){
+			console.log(response);
+			if (!response || !response.data || !response.data.content){
+				return onerror();
+			}
+			var content = response.data.content;
+			var utf8Content = decodeURIComponent(escape(atob(content)));
+			cleanUp();
+
+			callback(utf8Content);
+		};
+
+
+		window[jsonpCallbackId] = jsonpCallback;
+		var scriptElement = document.createElement('script');
+		scriptElement.async = true;
+		scriptElement.defer = true;
+		scriptElement.src = ghApiUrl;
+		scriptElement.onerror = onerror;
+
+		clearOutput();
+		document.getElementById('stats').innerHTML = 'Получаем текст с Гитхаба…';
+
+		document.body.appendChild(scriptElement);
+
+		return;
+	}
+	callback(text);
 }
